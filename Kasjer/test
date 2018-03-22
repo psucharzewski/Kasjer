@@ -1,0 +1,101 @@
+class Towar:
+    def __init__(self, name):
+        self.name = name
+        self.clicked = False
+        self.numberOfProduct = 1
+        self.actualNumberOfProduct = 1
+        self.time = 0
+        self.showed = False
+
+    def getClicked(self):
+        return self.clicked
+
+    def setClicked(self,bool):
+        self.clicked = bool
+
+    def getActualNumerOfProduct(self):
+        return self.actualNumberOfProduct
+    def getName(self):
+        return self.name
+
+    def getFullName(self):
+        pass
+
+    def getNotFullName(self):
+        pass
+
+    def lessProduct(self):
+        if(self.actualNumberOfProduct!=0):
+            self.actualNumberOfProduct = self.actualNumberOfProduct - 1
+
+
+class TowarNaSztuki(Towar):
+    def __init__(self,name):
+        super().__init__(name)
+        self.propability = random.random()
+        if(self.propability<float(0.5)):
+            self.numberOfProduct = 1
+        else:
+            self.numberOfProduct = random.randrange(2,21,1)
+        self.actualNumberOfProduct = self.numberOfProduct
+
+
+
+    def getNumberOfProduct(self):
+        return self.numberOfProduct
+
+    def getFullName(self):
+        return self.name +" "+ str(self.actualNumberOfProduct)
+
+    def getNotFullName(self):
+        pass
+
+    def lessProduct(self):
+        if(self.actualNumberOfProduct!=0):
+            self.actualNumberOfProduct = self.actualNumberOfProduct - 1
+
+
+class TowarNaWage(Towar):
+    def __init__(self,name):
+        super().__init__(name)
+        self.weightOfProduct=round(random.uniform(0.05,2.0),2)
+        self.actualNumberOfProduct = 1
+
+    def getWeightOfProduct(self):
+        return self.weightOfProduct
+
+    def getFullName(self):
+        return self.name + " " + str(self.weightOfProduct) + " kg"
+
+    def getNotFullName(self):
+        return self.name + " ? kg"
+
+
+def generator(number):
+    listaSztuki=["Maslo","Mleko","Chleb","Bulka","Dzem","Jajko","Musztarda","Serek","Margaryna","Olej"]
+    listaWaga=["Pomidory","Ziemniaki","Marchewka","Orzechy","Jabłka","Seler","Gruszki","Pietruszka","Szynka","Zolty ser"]
+    lista = []
+    for i in range(number):
+        if(i%2==0):
+            lista.append(TowarNaSztuki(random.choice(listaSztuki)))
+        else:
+            lista.append(TowarNaWage(random.choice(listaWaga)))
+    return lista
+
+
+class MyIterator():
+    def __init__(self, max=10):
+        self.max = max
+        self.n = 0
+
+    def __iter__(self):
+        self.n = 0
+        return self
+
+    def __next__(self):
+        if self.n <= self.max:
+            result = self.n
+            self.n += 1
+            return result
+        else:
+            raise StopIteration

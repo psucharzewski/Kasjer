@@ -1,0 +1,393 @@
+from tkinter import *
+from tkinter import messagebox
+import random
+import time
+root = Tk()
+howManyProducts = 4
+clicked = False
+clicked2 =False
+
+
+class Towar:
+    def __init__(self, name):
+        self.name = name
+        self.clicked = False
+        self.numberOfProduct = 1
+        self.actualNumberOfProduct = 1
+        self.time = 0
+        self.showed = False
+
+    def getClicked(self):
+        return self.clicked
+
+    def setClicked(self,bool):
+        self.clicked = bool
+
+    def getActualNumerOfProduct(self):
+        return self.actualNumberOfProduct
+    def getName(self):
+        return self.name
+
+    def getFullName(self):
+        pass
+
+    def getNotFullName(self):
+        pass
+
+    def lessProduct(self):
+        if(self.actualNumberOfProduct!=0):
+            self.actualNumberOfProduct = self.actualNumberOfProduct - 1
+
+
+class TowarNaSztuki(Towar):
+    def __init__(self,name):
+        super().__init__(name)
+        self.propability = random.random()
+        if(self.propability<float(0.5)):
+            self.numberOfProduct = 1
+        else:
+            self.numberOfProduct = random.randrange(2,21,1)
+        self.actualNumberOfProduct = self.numberOfProduct
+
+
+
+    def getNumberOfProduct(self):
+        return self.numberOfProduct
+
+    def getFullName(self):
+        return self.name +" "+ str(self.actualNumberOfProduct)
+
+    def getNotFullName(self):
+        pass
+
+    def lessProduct(self):
+        if(self.actualNumberOfProduct!=0):
+            self.actualNumberOfProduct = self.actualNumberOfProduct - 1
+
+
+class TowarNaWage(Towar):
+    def __init__(self,name):
+        super().__init__(name)
+        self.weightOfProduct=round(random.uniform(0.05,2.0),2)
+        self.actualNumberOfProduct = 1
+
+    def getWeightOfProduct(self):
+        return self.weightOfProduct
+
+    def getFullName(self):
+        return self.name + " " + str(self.weightOfProduct) + " kg"
+
+    def getNotFullName(self):
+        return self.name + " ? kg"
+
+
+def generator(number):
+    listaSztuki=["Maslo","Mleko","Chleb","Bulka","Dzem","Jajko","Musztarda","Serek","Margaryna","Olej"]
+    listaWaga=["Pomidory","Ziemniaki","Marchewka","Orzechy","Jabłka","Seler","Gruszki","Pietruszka","Szynka","Zolty ser"]
+    lista = []
+    for i in range(number):
+        if(i%2==0):
+            lista.append(TowarNaSztuki(random.choice(listaSztuki)))
+        else:
+            lista.append(TowarNaWage(random.choice(listaWaga)))
+    return lista
+
+
+class MyIterator():
+    def __init__(self, max):
+        self.max = max
+        self.n = 0
+
+    def __iter__(self):
+        self.n = 0
+        return self
+
+    def __next__(self):
+        if self.n <= self.max:
+            result = self.n
+            self.n += 1
+            return result
+        else:
+            raise StopIteration
+
+
+lewa_strona = LabelFrame(root, text="This is a LabelFrame")
+lewa_strona.pack(side="left", expand="yes")
+#prawa_strona= LabelFrame(root, text="This is a LabelFrame")
+#prawa_strona.pack(side="right", expand="yes")
+
+
+
+class Produkty:
+
+    def __init__(self, master):
+        global howManyProducts
+        self.lista = random.randrange(10,21,1)
+        self.listOfObjects = generator(howManyProducts)
+        self.listaIterator = MyIterator(howManyProducts)
+        self.startTime = 0
+        self.startBool = False
+        self.stopBool = False
+        self.buttonFirstClick = True
+        self.justChcked = 0
+        self.x1 = random.randrange(100, 400, 1)
+        self.y1 = random.randrange(100, 400, 1)
+        self.frame = LabelFrame(master,height=500,width=500)
+        self.frame.pack(side=LEFT)
+        self.nastepnyKlient = Button(self.frame,text ="NASTEPNY KLIENT",font=("Courier", 15),bg="red",command=self.start)
+        self.nastepnyKlient.place(x=0, y=0,height=100, width=200)
+        self.clock = Label(self.frame,font=("Courier", 15),text="")
+        self.clock.place(x=300)
+        self.string_to_show = StringVar()
+        number = len(self.listOfObjects) - self.justChcked
+        number = "Pozostalo " + str(number)
+        self.string_to_show.set(number)
+        self.howManyLast = Label(self.frame,font=("Courier", 15), textvariable=self.string_to_show)
+        self.howManyLast.place(x=350)
+        self.updateClock()
+        self.a = next(self.listaIterator)
+        self.zwaz = Button(self.frame, text=self.listOfObjects[self.a].getFullName(),command=self.zwaz_function)
+
+        #self.zwaz.place(sticky=N, columnspan=2, row=1, column=1)
+        #self.product = Button(self.frame,text = "")
+
+    def zwaz_function(self):
+        global clicked,clicked2
+
+        check()
+        if(self.listOfObjects[self.a].getActualNumerOfProduct() == 0 or self.listOfObjects[self.a].showed ==True):
+            self.zwaz.place_forget()
+            self.listOfObjects[self.a].time = time.time() - self.lastTime
+            self.lastTime = time.time()
+            self.a = next(self.listaIterator)
+            clicked = False
+            clicked2 = False
+            turnOnClean()
+            self.justChcked += 1
+            number = len(self.listOfObjects) - self.justChcked
+            number = "Pozostalo " + str(number)
+            self.string_to_show.set(str(number))
+            self.x1 = random.randrange(100, 400, 1)
+            self.y1 = random.randrange(100, 400, 1)
+            try:
+                if (isinstance(self.listOfObjects[self.a], TowarNaWage)):
+                    self.zwaz = Button(self.frame, text=self.listOfObjects[self.a].getNotFullName(),
+                                       command=self.zwaz_function)
+                else:
+                    self.zwaz = Button(self.frame, text=self.listOfObjects[self.a].getFullName(),
+                                       command=self.zwaz_function)
+                self.zwaz.place(x=self.x1, y=self.y1)
+            except:
+                self.stop()
+        else:
+            if(isinstance(self.listOfObjects[self.a],TowarNaWage)):
+                if((self.buttonFirstClick==True) and (clicked==True)):
+                    self.zwaz.place_forget()
+                    self.zwaz = Button(self.frame, text=self.listOfObjects[self.a].getFullName(),
+                                       command=self.zwaz_function)
+                    self.listOfObjects[self.a].showed = True
+                    self.zwaz.place(x=self.x1, y=self.y1)
+                else:
+                    self.zwaz.place_forget()
+                    self.zwaz = Button(self.frame, text=self.listOfObjects[self.a].getNotFullName(),
+                                       command=self.zwaz_function)
+                    self.zwaz.place(x=self.x1, y=self.y1)
+                    self.buttonFirstClick=True
+            else:
+                self.zwaz.place_forget()
+                self.listOfObjects[self.a].lessProduct()
+                if (self.listOfObjects[self.a].getActualNumerOfProduct() == 0 or self.listOfObjects[self.a].showed==True):
+                    self.zwaz.place_forget()
+                    self.listOfObjects[self.a].time = time.time() - self.lastTime
+                    self.lastTime = time.time()
+                    self.a = next(self.listaIterator)
+                    clicked=False
+                    clicked2=False
+                    turnOnClean()
+                    self.justChcked += 1
+                    number = len(self.listOfObjects) - self.justChcked
+                    number = "Pozostalo " + str(number)
+                    self.string_to_show.set(number)
+                    self.x1 = random.randrange(100, 400, 1)
+                    self.y1 = random.randrange(100, 400, 1)
+                    if (isinstance(self.listOfObjects[self.a], TowarNaWage)):
+                        self.zwaz = Button(self.frame, text=self.listOfObjects[self.a].getNotFullName(), command=self.zwaz_function)
+                    else:
+                        self.zwaz = Button(self.frame, text=self.listOfObjects[self.a].getFullName(),
+                                           command=self.zwaz_function)
+                    self.zwaz.place(x=self.x1, y=self.y1)
+                else:
+
+                    if (isinstance(self.listOfObjects[self.a], TowarNaWage)):
+                        self.zwaz = Button(self.frame, text=self.listOfObjects[self.a].getNotFullName(), command=self.zwaz_function)
+                    else:
+                        self.zwaz = Button(self.frame, text=self.listOfObjects[self.a].getFullName(),
+                                           command=self.zwaz_function)
+                    self.zwaz.place(x=self.x1, y=self.y1)
+        turnOnClean()
+
+    def hello(self,myString,prod):
+        show = "Twoj sredni czas to " + str(round(myString,4)) + " s dla " + str(prod) + " produktow"
+        messagebox.showinfo("Koniec Gry!!", show)
+
+    def youLost(self):
+        show = "PRZEGRALES!!"
+        messagebox.showinfo("Koniec Gry", show)
+
+    def nextElement(self):
+        global clicked,clicked2
+        self.zwaz.place_forget()
+        self.listOfObjects[self.a].time = time.time() - self.lastTime
+        self.lastTime = time.time()
+        self.a = next(self.listaIterator)
+        clicked = False
+        clicked2 = False
+        turnOnClean()
+        self.justChcked += 1
+        number = len(self.listOfObjects) - self.justChcked
+        number = "Pozostalo " + str(number)
+        self.string_to_show.set(number)
+        self.x1 = random.randrange(100, 400, 1)
+        self.y1 = random.randrange(100, 400, 1)
+        if (isinstance(self.listOfObjects[self.a], TowarNaWage)):
+            self.zwaz = Button(self.frame, text=self.listOfObjects[self.a].getNotFullName(), command=self.zwaz_function)
+        else:
+            self.zwaz = Button(self.frame, text=self.listOfObjects[self.a].getFullName(),
+                               command=self.zwaz_function)
+        self.zwaz.place(x=self.x1, y=self.y1)
+    def start(self):
+        self.nastepnyKlient.place_forget()
+        self.startTime = time.time()
+        self.lastTime = self.startTime
+        self.startBool = True
+        self.zwaz.place(x=self.x1, y=self.y1)
+    def stop(self):
+        global howManyProducts
+        sum = 0
+        prod = 0
+        for x in range(len(self.listOfObjects)):
+            sum += self.listOfObjects[x].time
+            prod += self.listOfObjects[x].numberOfProduct
+            print(self.listOfObjects[x].time)
+
+        sum /= prod
+        self.stopBool= True
+        self.hello(sum,prod)
+        print(sum)
+
+    def updateClock(self):
+        if(self.startBool==True):
+            self.now = time.time()- self.startTime
+            self.now = round(self.now,1)
+        else:
+            self.now = 0
+
+        if(self.stopBool == True):
+            self.now = 0
+            self.clock.configure(text=self.now)
+        else:
+            self.clock.configure(text=self.now)
+            root.after(100, self.updateClock)
+
+
+    def setClicked(self):
+        self.clicked = True
+
+class Klawiatura():
+    def __init__(self, master):
+        frame = Canvas(master)
+        frame.pack(side="right")
+        self.number_string = "1"
+        self.first_time = TRUE
+        self.backspace = Button(frame, text="backspace", command=self.backspace_function,bg="yellow",font=("Courier", 15))
+        self.backspace.grid(columnspan=2, row=1, column=1)
+        self.wyczysc = Button(frame, text="wyczysc", command=self.wyczysc_function,bg="yellow",font=("Courier", 15))
+        self.wyczysc.grid(columnspan=2, row=1, column=3)
+        self.przycisk_1 = Button(frame, text="1",font=("Courier", 15),command=lambda: self.add("1"))
+        self.przycisk_1.grid(ipadx=15, ipady=15,row=2, column=1)
+        self.przycisk_2 = Button(frame, text="2",font=("Courier", 15), command=lambda: self.add("2"))
+        self.przycisk_2.grid(ipadx=15, ipady=15,row=2, column=2)
+        self.przycisk_3 = Button(frame, text="3",font=("Courier", 15), command=lambda: self.add("3"))
+        self.przycisk_3.grid(ipadx=15, ipady=15,row=2, column=3)
+        self.przycisk_4 = Button(frame, text="4",font=("Courier", 15), command=lambda: self.add("4"))
+        self.przycisk_4.grid(ipadx=15, ipady=15,row=3, column=1)
+        self.przycisk_5 = Button(frame, text="5",font=("Courier", 15), command=lambda: self.add("5"))
+        self.przycisk_5.grid(ipadx=15, ipady=15,row=3, column=2)
+        self.przycisk_6 = Button(frame, text="6",font=("Courier", 15), command=lambda: self.add("6"))
+        self.przycisk_6.grid(ipadx=15, ipady=15,row=3, column=3)
+        self.przycisk_7 = Button(frame, text="7",font=("Courier", 15), command=lambda: self.add("7"))
+        self.przycisk_7.grid(ipadx=15, ipady=15,row=4, column=1)
+        self.przycisk_8 = Button(frame, text="8",font=("Courier", 15), command=lambda: self.add("8"))
+        self.przycisk_8.grid(ipadx=15, ipady=15,row=4, column=2)
+        self.przycisk_9 = Button(frame, text="9",font=("Courier", 15), command=lambda: self.add("9"))
+        self.przycisk_9.grid(ipadx=15, ipady=15,row=4, column=3)
+        self.przycisk_0 = Button(frame, text="0", font=("Courier", 15),command=lambda: self.add("0"))
+        self.przycisk_0.grid(ipadx=15, ipady=15,row=5, column=2)
+        self.zwaz = Button(frame, text="zwaz",bg="yellow", command=self.zwazFucnction)
+        self.zwaz.grid(ipadx=20, ipady=15,columnspan=3, row=6, column=1)
+        self.string_to_show = StringVar()
+        self.string_to_show.set(self.number_string)
+        self.screen = Message(frame, textvariable=self.string_to_show,bg="blue",fg="yellow", relief=RAISED, width=100)
+        self.screen.grid(ipadx=10, ipady=10,columnspan=4, row=7, column=1)
+
+    def add(self, number):
+        global clicked2
+        clicked2 = True
+        if (self.first_time == TRUE):
+            self.number_string = ""
+            self.number_string += number
+            self.first_time = False
+        else:
+            self.number_string += number
+        self.string_to_show.set(self.number_string)
+
+    def zwazFucnction(self):
+        global clicked
+        clicked = True
+        check2()
+
+    def backspace_function(self):
+        self.number_string = self.number_string[:-1]
+        self.string_to_show.set(self.number_string)
+
+    def wyczysc_function(self):
+        self.number_string = "1"
+        self.first_time = TRUE
+        self.string_to_show.set(self.number_string)
+
+
+
+def send(Klawiatura,Produkty):
+    if(Produkty.listOfObjects[Produkty.a].actualNumberOfProduct == int(Klawiatura.number_string)):
+        Produkty.nextElement()
+
+    elif((Produkty.listOfObjects[Produkty.a].actualNumberOfProduct) < (int(Klawiatura.number_string))):
+        Produkty.youLost()
+    else:
+        Produkty.listOfObjects[Produkty.a].actualNumberOfProduct = Produkty.listOfObjects[Produkty.a].actualNumberOfProduct - int(Klawiatura.number_string) +1
+
+def send2(Produkty):
+    if (isinstance(Produkty.listOfObjects[Produkty.a],TowarNaWage) ==False):
+        Produkty.youLost()
+def clean(Klawiatura):
+    Klawiatura.wyczysc_function()
+#left = Label(lewa_strona, text="Witamy w programie kasjer")
+#right = Label(prawa_strona, text="nieeeeeee")
+#left.pack()
+#right.pack()
+przyciski =Klawiatura(root)
+produkty = Produkty(root)
+def check():
+    global clicked2
+    if(clicked2==True):
+        clicked2=False
+        send(przyciski,produkty)
+
+def check2():
+    send2(produkty)
+def turnOnClean():
+    clean(przyciski)
+root.mainloop()
+
+
+
